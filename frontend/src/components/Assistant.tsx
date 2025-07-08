@@ -4,6 +4,7 @@ import { LoadingSVG } from "@/components/button/LoadingSVG";
 import { Header } from "@/components/Header";
 import { Tile } from "@/components/Tile";
 import { AgentMultibandAudioVisualizer } from "@/components/visualization/AgentMultibandAudioVisualizer";
+import DivineHaloVisualizer from "@/components/visualization/DivineHaloVisualizer";
 import { useMultibandTrackVolume } from "@/hooks/useTrackVolume";
 import { useWindowResize } from "@/hooks/useWindowResize";
 import {
@@ -51,6 +52,9 @@ export default function Assistant({ title, logo, onConnect }: AssistantProps) {
   const { localParticipant } = useLocalParticipant();
   const [currentVoiceId, setCurrentVoiceId] = useState<string>("");
   const [showVoices, setShowVoices] = useState(true);
+  const [visualizationMode, setVisualizationMode] = useState<'divine' | 'particles' | 'wave'>('divine');
+  const [sensitivity, setSensitivity] = useState(0.02); // Default to 2%
+  const [faceImage, setFaceImage] = useState<string | null>(null);
   const windowSize = useWindowResize();
   const {
     agent: agentParticipant,
@@ -108,6 +112,17 @@ export default function Assistant({ title, logo, onConnect }: AssistantProps) {
     },
     [localParticipant, setCurrentVoiceId]
   );
+
+  const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFaceImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  }, []);
 
   const audioTileContent = useMemo(() => {
     const conversationToolbar = (
@@ -205,16 +220,73 @@ export default function Assistant({ title, logo, onConnect }: AssistantProps) {
       </div>
     );
     const visualizerContent = (
-      <div className="flex flex-col items-center justify-space-between h-full w-full pb-12">
-        <div className="h-full flex">
-          <AgentMultibandAudioVisualizer
+      <div className="flex flex-col items-center justify-space-between h-full w-full relative bg-[#0a0a0a]">
+        <div className="h-full w-full flex flex-col items-center">
+          <DivineHaloVisualizer
+            frequencyData={!agentAudioTrack ? null : subscribedVolumes}
             state={agentState}
-            barWidth={isMobile ? mobileBarWidth : desktopBarWidth}
-            minBarHeight={isMobile ? mobileMinBarHeight : desktopMinBarHeight}
-            maxBarHeight={isMobile ? mobileMaxBarHeight : desktopMaxBarHeight}
-            frequencies={!agentAudioTrack ? defaultVolumes : subscribedVolumes}
-            gap={16}
+            sensitivity={sensitivity}
+            visualizationMode={visualizationMode}
+            faceImage={faceImage}
           />
+        </div>
+        <div className="absolute top-4 left-4 flex flex-col gap-3 bg-black/80 backdrop-blur-lg p-4 rounded-xl border border-purple-600/20">
+          <div className="flex gap-2">
+            <button
+              className={`px-3 py-1.5 rounded text-sm transition-all ${
+                visualizationMode === 'divine' ? 'bg-purple-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'
+              }`}
+              onClick={() => setVisualizationMode('divine')}
+            >
+              Divine Halo
+            </button>
+            <button
+              className={`px-3 py-1.5 rounded text-sm transition-all ${
+                visualizationMode === 'particles' ? 'bg-purple-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'
+              }`}
+              onClick={() => setVisualizationMode('particles')}
+            >
+              Particles
+            </button>
+            <button
+              className={`px-3 py-1.5 rounded text-sm transition-all ${
+                visualizationMode === 'wave' ? 'bg-purple-600 text-white' : 'bg-white/10 text-white hover:bg-white/20'
+              }`}
+              onClick={() => setVisualizationMode('wave')}
+            >
+              Wave
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="text-white text-sm">Sensitivity:</label>
+            <input
+              type="range"
+              min="10"
+              max="200"
+              value={sensitivity * 100}
+              onChange={(e) => setSensitivity(Number(e.target.value) / 100)}
+              className="w-32 accent-purple-600"
+              style={{
+                background: `linear-gradient(to right, #8B2BE2 0%, #8B2BE2 ${(sensitivity * 100 - 10) / 1.9}%, rgba(255,255,255,0.1) ${(sensitivity * 100 - 10) / 1.9}%, rgba(255,255,255,0.1) 100%)`
+              }}
+            />
+            <span className="text-purple-400 font-semibold text-sm w-12">{Math.round(sensitivity * 100)}%</span>
+          </div>
+          <div>
+            <input
+              type="file"
+              id="faceImageUpload"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            <button
+              onClick={() => document.getElementById('faceImageUpload')?.click()}
+              className="px-3 py-1.5 bg-purple-600/20 text-purple-300 border border-purple-600/30 rounded text-sm hover:bg-purple-600/30 hover:text-white transition-all"
+            >
+              Upload Face Image
+            </button>
+          </div>
         </div>
         <div className="min-h-20 w-full relative">
           <AnimatePresence>
@@ -233,10 +305,13 @@ export default function Assistant({ title, logo, onConnect }: AssistantProps) {
     showVoices,
     roomState,
     agentAudioTrack,
-    isMobile,
     subscribedVolumes,
     onConnect,
     agentState,
+    visualizationMode,
+    sensitivity,
+    faceImage,
+    handleImageUpload,
   ]);
 
   const voiceSelectionPanel = useMemo(() => {
@@ -288,9 +363,10 @@ export default function Assistant({ title, logo, onConnect }: AssistantProps) {
       >
         <div className="flex-col grow basis-1/2 gap-4 h-full md:flex">
           <Tile
-            title="ASSISTANT"
-            className="w-full h-full grow"
-            childrenClassName="justify-center"
+            title=""
+            className="w-full h-full grow bg-[#0a0a0a]"
+            childrenClassName="justify-center p-0"
+            padding={false}
           >
             {audioTileContent}
           </Tile>
