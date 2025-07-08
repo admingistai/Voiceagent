@@ -42,12 +42,8 @@ class KnowledgeBase:
             collection_name: Name of the ChromaDB collection
             persist_directory: Directory to persist the database
         """
-        # Configure ChromaDB with telemetry disabled to avoid errors
-        settings = chromadb.Settings(
-            anonymized_telemetry=False,
-            allow_reset=True
-        )
-        self.client = chromadb.PersistentClient(path=persist_directory, settings=settings)
+        # Use simple ChromaDB client configuration
+        self.client = chromadb.PersistentClient(path=persist_directory)
         
         # Use OpenAI embeddings for consistency with the LLM
         openai_key = os.getenv("OPENAI_API_KEY")
