@@ -22,7 +22,9 @@ import logging
 from dotenv import load_dotenv
 
 # Import our agent components
-from knowledge_base import KnowledgeBase
+import sys
+sys.path.append('/app/agent')
+from agent.knowledge_base import KnowledgeBase
 from session_manager import SessionManager
 
 load_dotenv()

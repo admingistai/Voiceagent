@@ -43,6 +43,7 @@ COPY agent/ ./agent/
 COPY api_gateway.py .
 COPY session_manager.py .
 COPY widget/ ./widget/
+COPY start.sh .
 
 # Copy knowledge base files if they exist
 COPY sample_knowledge.json* ./
@@ -69,4 +70,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD python -c "import requests; requests.get('http://localhost:${PORT:-8000}/health')"
 
 # Start the API Gateway
-CMD ["python", "-m", "uvicorn", "api_gateway:app", "--host", "0.0.0.0", "--port", "${PORT:-8000}"]
+CMD ["./start.sh"]
