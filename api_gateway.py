@@ -167,7 +167,7 @@ async def health_check():
     """Railway health check endpoint"""
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(datetime.UTC).isoformat(),
         "service": "voice-agent-api",
         "version": "1.0.0",
         "components": {
