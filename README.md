@@ -21,7 +21,9 @@ Experience real-time voice conversations with stunning visual feedback that resp
 
 ## Live Demo
 
-https://cartesia-assistant.vercel.app/
+🎬 **[Watch Video Demo](https://github.com/admingistai/Voiceagent/raw/main/.github/Screen%20Recording%202025-07-08%20at%201.14.11%20AM.mov)** - See the divine halo visualization in action!
+
+🌐 **Try it live**: https://cartesia-assistant.vercel.app/
 
 ![Screenshot of the Divine Halo Voice Agent](.github/screenshot.png)
 
