@@ -7,4 +7,4 @@ livekit-plugins-turn-detector<1.0.0
 python-dotenv
 requests
 chromadb>=0.4.0
-numpy>=1.24.0
+numpy==1.26.4
