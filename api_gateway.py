@@ -7,7 +7,7 @@ import os
 import json
 import uuid
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List
 from contextlib import asynccontextmanager
 
@@ -167,7 +167,7 @@ async def health_check():
     """Railway health check endpoint"""
     return {
         "status": "healthy",
-        "timestamp": datetime.now(datetime.UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "service": "voice-agent-api",
         "version": "1.0.0",
         "components": {
