@@ -1,0 +1,20 @@
+[build]
+builder = "nixpacks"
+buildCommand = "pip install -r requirements.txt"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[variables]
+# Set these in Railway dashboard
+LIVEKIT_URL = "${{LIVEKIT_URL}}"
+LIVEKIT_API_KEY = "${{LIVEKIT_API_KEY}}"
+LIVEKIT_API_SECRET = "${{LIVEKIT_API_SECRET}}"
+OPENAI_API_KEY = "${{OPENAI_API_KEY}}"
+CARTESIA_API_KEY = "${{CARTESIA_API_KEY}}"
+DEEPGRAM_API_KEY = "${{DEEPGRAM_API_KEY}}"
+API_SECRET_KEY = "${{API_SECRET_KEY}}"
+REDIS_URL = "${{REDIS_URL}}"

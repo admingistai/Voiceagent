@@ -1,0 +1,23 @@
+# Combined requirements for Railway deployment
+# Voice Agent dependencies
+livekit-agents<1.0.0
+livekit-plugins-openai<1.0.0
+livekit-plugins-deepgram<1.0.0
+livekit-plugins-silero<1.0.0
+livekit-plugins-cartesia<1.0.0
+livekit-plugins-turn-detector<1.0.0
+livekit-api
+python-dotenv
+requests
+chromadb>=0.4.0
+numpy==1.26.4
+
+# API Gateway dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-jose[cryptography]==3.3.0
+websockets==12.0
+redis==5.0.1
+httpx==0.25.2
+python-multipart==0.0.6
