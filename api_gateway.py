@@ -21,17 +21,22 @@ import redis
 import logging
 from dotenv import load_dotenv
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Import our agent components
 import sys
 sys.path.append('/app/agent')
 from agent.knowledge_base import KnowledgeBase
 from session_manager import SessionManager
 
-load_dotenv()
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Only load .env file if not in Railway (Railway provides env vars directly)
+if not os.getenv("RAILWAY_ENVIRONMENT"):
+    load_dotenv()
+    logger.info("Loaded environment variables from .env file")
+else:
+    logger.info("Running in Railway environment, using Railway-provided environment variables")
 
 # Environment variables
 LIVEKIT_API_KEY = os.getenv("LIVEKIT_API_KEY")
@@ -41,30 +46,60 @@ API_SECRET_KEY = os.getenv("API_SECRET_KEY", "your-secret-key-here")
 REDIS_URL = os.getenv("REDIS_URL")
 PORT = int(os.getenv("PORT", 8000))
 
-# Initialize components
-kb = KnowledgeBase()
-session_manager = SessionManager(redis_url=REDIS_URL)
+# Initialize components - will be set during startup
+kb = None
+session_manager = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events"""
+    global kb, session_manager
+    
     # Startup
     logger.info("Starting API Gateway...")
     
-    # Load default knowledge base if available
-    kb_file = os.getenv("DEFAULT_KB_FILE", "sample_knowledge.json")
-    if os.path.exists(kb_file):
-        try:
-            kb.load_from_file(kb_file)
-            logger.info(f"Loaded knowledge base from {kb_file}")
-        except Exception as e:
-            logger.error(f"Failed to load knowledge base: {e}")
+    # Log environment variable status
+    logger.info("=== Environment Variables Status ===")
+    logger.info(f"OPENAI_API_KEY: {'set' if os.getenv('OPENAI_API_KEY') else 'NOT SET'}")
+    logger.info(f"LIVEKIT_API_KEY: {'set' if LIVEKIT_API_KEY else 'NOT SET'}")
+    logger.info(f"LIVEKIT_API_SECRET: {'set' if LIVEKIT_API_SECRET else 'NOT SET'}")
+    logger.info(f"REDIS_URL: {'set' if REDIS_URL else 'NOT SET'}")
+    logger.info(f"PORT: {PORT}")
+    logger.info("===================================")
+    
+    # Initialize session manager (doesn't require OpenAI)
+    try:
+        session_manager = SessionManager(redis_url=REDIS_URL)
+        logger.info("Session manager initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize session manager: {e}")
+        # Continue anyway - sessions might work without Redis
+        session_manager = SessionManager(redis_url=None)
+    
+    # Try to initialize knowledge base, but don't fail if it can't
+    try:
+        kb = KnowledgeBase()
+        logger.info("Knowledge base initialized successfully")
+        
+        # Load default knowledge base if available
+        kb_file = os.getenv("DEFAULT_KB_FILE", "sample_knowledge.json")
+        if os.path.exists(kb_file):
+            try:
+                kb.load_from_file(kb_file)
+                logger.info(f"Loaded knowledge base from {kb_file}")
+            except Exception as e:
+                logger.error(f"Failed to load knowledge base file: {e}")
+    except Exception as e:
+        logger.error(f"Failed to initialize knowledge base: {e}")
+        logger.warning("Knowledge base endpoints will return 503 until OPENAI_API_KEY is set")
+        kb = None  # Knowledge base features will be disabled
     
     yield
     
     # Shutdown
     logger.info("Shutting down API Gateway...")
-    await session_manager.cleanup()
+    if session_manager:
+        await session_manager.cleanup()
 
 # Create FastAPI app
 app = FastAPI(
@@ -109,6 +144,23 @@ class WidgetConfig(BaseModel):
     position: Optional[str] = "bottom-right"
     primary_color: Optional[str] = "#8B2BE2"
 
+# Root endpoint
+@app.get("/")
+async def root():
+    """Root endpoint with API information"""
+    return {
+        "message": "Divine Halo Voice Agent API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health",
+        "debug": "/api/debug/env",
+        "endpoints": {
+            "sessions": "/api/sessions",
+            "knowledge_base": "/api/knowledge-base",
+            "widget": "/api/widget"
+        }
+    }
+
 # Health check endpoint (required for Railway)
 @app.get("/health")
 async def health_check():
@@ -117,7 +169,42 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "service": "voice-agent-api",
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "components": {
+            "knowledge_base": kb is not None,
+            "session_manager": session_manager is not None
+        }
+    }
+
+# Debug endpoint for environment variables
+@app.get("/api/debug/env")
+async def debug_environment(api_key: Optional[str] = None):
+    """Debug endpoint to check environment variables (protected)"""
+    # Simple protection - require API key in production
+    if os.getenv("RAILWAY_ENVIRONMENT") and api_key != API_SECRET_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    return {
+        "environment": {
+            "RAILWAY_ENVIRONMENT": os.getenv("RAILWAY_ENVIRONMENT", "not set"),
+            "PORT": os.getenv("PORT", "not set"),
+            "OPENAI_API_KEY": "set" if os.getenv("OPENAI_API_KEY") else "NOT SET",
+            "LIVEKIT_API_KEY": "set" if os.getenv("LIVEKIT_API_KEY") else "NOT SET",
+            "LIVEKIT_API_SECRET": "set" if os.getenv("LIVEKIT_API_SECRET") else "NOT SET",
+            "LIVEKIT_URL": os.getenv("LIVEKIT_URL", "not set"),
+            "DEEPGRAM_API_KEY": "set" if os.getenv("DEEPGRAM_API_KEY") else "NOT SET",
+            "CARTESIA_API_KEY": "set" if os.getenv("CARTESIA_API_KEY") else "NOT SET",
+            "REDIS_URL": "set" if os.getenv("REDIS_URL") else "NOT SET",
+            "API_SECRET_KEY": "set" if os.getenv("API_SECRET_KEY") else "NOT SET",
+            "DEFAULT_KB_FILE": os.getenv("DEFAULT_KB_FILE", "not set"),
+            "ALLOWED_ORIGINS": os.getenv("ALLOWED_ORIGINS", "not set"),
+            "PYTHONPATH": os.getenv("PYTHONPATH", "not set"),
+        },
+        "components": {
+            "knowledge_base": "initialized" if kb else "NOT INITIALIZED",
+            "session_manager": "initialized" if session_manager else "NOT INITIALIZED"
+        },
+        "timestamp": datetime.utcnow().isoformat()
     }
 
 # Session Management Endpoints
@@ -189,16 +276,48 @@ async def end_session(session_id: str):
     
     return {"message": "Session ended successfully", "session_id": session_id}
 
+# Helper function to check if kb is initialized
+def get_kb():
+    """Get the knowledge base instance, initialize if needed"""
+    global kb
+    
+    if kb is None:
+        # Try lazy initialization
+        try:
+            logger.info("Attempting lazy initialization of knowledge base...")
+            kb = KnowledgeBase()
+            logger.info("Knowledge base initialized successfully via lazy loading")
+            
+            # Try to load default knowledge base if available
+            kb_file = os.getenv("DEFAULT_KB_FILE", "sample_knowledge.json")
+            if os.path.exists(kb_file):
+                try:
+                    kb.load_from_file(kb_file)
+                    logger.info(f"Loaded knowledge base from {kb_file}")
+                except Exception as e:
+                    logger.error(f"Failed to load knowledge base file: {e}")
+        except Exception as e:
+            logger.error(f"Failed to initialize knowledge base: {e}")
+            raise HTTPException(
+                status_code=503, 
+                detail=f"Knowledge base not available. Error: {str(e)}. Please ensure OPENAI_API_KEY is set in Railway environment variables."
+            )
+    
+    return kb
+
 # Knowledge Base Endpoints
 @app.post("/api/knowledge-base/documents")
 async def add_document(document: KnowledgeBaseDocument):
     """Add a document to the knowledge base"""
     try:
-        doc_id = kb.add_document(
+        knowledge_base = get_kb()
+        doc_id = knowledge_base.add_document(
             content=document.content,
             metadata=document.metadata
         )
         return {"document_id": doc_id, "message": "Document added successfully"}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to add document: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -207,8 +326,11 @@ async def add_document(document: KnowledgeBaseDocument):
 async def list_documents(limit: int = 100):
     """List all documents in the knowledge base"""
     try:
-        documents = kb.list_documents(limit=limit)
+        knowledge_base = get_kb()
+        documents = knowledge_base.list_documents(limit=limit)
         return {"documents": documents, "count": len(documents)}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to list documents: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -217,8 +339,11 @@ async def list_documents(limit: int = 100):
 async def search_knowledge_base(query: str, n_results: int = 3):
     """Search the knowledge base"""
     try:
-        results = kb.search(query, n_results=n_results)
+        knowledge_base = get_kb()
+        results = knowledge_base.search(query, n_results=n_results)
         return {"query": query, "results": results}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to search knowledge base: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -227,8 +352,11 @@ async def search_knowledge_base(query: str, n_results: int = 3):
 async def delete_document(doc_id: str):
     """Delete a document from the knowledge base"""
     try:
-        kb.delete_document(doc_id)
+        knowledge_base = get_kb()
+        knowledge_base.delete_document(doc_id)
         return {"message": "Document deleted successfully", "document_id": doc_id}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to delete document: {e}")
         raise HTTPException(status_code=500, detail=str(e))

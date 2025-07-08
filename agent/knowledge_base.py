@@ -45,8 +45,15 @@ class KnowledgeBase:
         self.client = chromadb.PersistentClient(path=persist_directory)
         
         # Use OpenAI embeddings for consistency with the LLM
+        openai_key = os.getenv("OPENAI_API_KEY")
+        if not openai_key:
+            raise ValueError(
+                "OPENAI_API_KEY environment variable is required for KnowledgeBase. "
+                "Please set it in Railway environment variables."
+            )
+        
         self.embedding_function = embedding_functions.OpenAIEmbeddingFunction(
-            api_key=os.getenv("OPENAI_API_KEY"),
+            api_key=openai_key,
             model_name="text-embedding-3-small"
         )
         
