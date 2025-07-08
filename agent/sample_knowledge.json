@@ -1,0 +1,42 @@
+[
+    {
+        "content": "Our company was founded in 2020 with the mission to make AI accessible to everyone. We specialize in voice-based AI solutions that help businesses automate customer service and improve user engagement.",
+        "metadata": {
+            "title": "Company Overview",
+            "category": "about",
+            "tags": ["company", "mission", "overview"]
+        }
+    },
+    {
+        "content": "Our main products include: 1) VoiceBot Pro - An enterprise voice assistant platform, 2) ChatSync - Real-time conversation analytics, 3) AudioScribe - Automatic meeting transcription and summarization.",
+        "metadata": {
+            "title": "Product Portfolio",
+            "category": "products",
+            "tags": ["products", "services", "offerings"]
+        }
+    },
+    {
+        "content": "Our pricing plans: Starter Plan ($99/month) - Up to 1,000 conversations, Pro Plan ($499/month) - Up to 10,000 conversations with analytics, Enterprise Plan (Custom pricing) - Unlimited conversations with dedicated support.",
+        "metadata": {
+            "title": "Pricing Information",
+            "category": "pricing",
+            "tags": ["pricing", "plans", "cost"]
+        }
+    },
+    {
+        "content": "To get started: 1) Sign up for a free trial at our website, 2) Get your API keys from the dashboard, 3) Install our SDK using npm or pip, 4) Follow our quickstart guide to build your first voice application.",
+        "metadata": {
+            "title": "Getting Started Guide",
+            "category": "documentation",
+            "tags": ["setup", "installation", "quickstart"]
+        }
+    },
+    {
+        "content": "Common issues and solutions: 'Audio not working' - Check microphone permissions in browser settings. 'High latency' - Ensure you're using a server region close to your users. 'Transcription errors' - Try adjusting the language model or adding custom vocabulary.",
+        "metadata": {
+            "title": "Troubleshooting Guide",
+            "category": "support",
+            "tags": ["troubleshooting", "issues", "solutions"]
+        }
+    }
+]
