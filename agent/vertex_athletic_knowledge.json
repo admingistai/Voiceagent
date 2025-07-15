@@ -1,0 +1,74 @@
+[
+    {
+        "title": "VERTEX Athletic Company Overview",
+        "content": "VERTEX Athletic is an athletic footwear company founded in 2018 by a team of mountaineers, trail runners, and environmental scientists. The company was born at 14,000 feet on a failed summit attempt of Mount Rainier when founders realized their gear wasn't designed for modern outdoor athletes who move seamlessly between city streets and mountain peaks. Their mission is 'Reach Your Peak' - creating gear that helps everyone reach their own summit, whether it's a first 5K, ultra-marathon, or staying active with family.",
+        "metadata": {
+            "category": "company_info",
+            "type": "overview",
+            "tags": ["vertex", "athletic", "company", "mission", "founding"]
+        }
+    },
+    {
+        "title": "VERTEX Athletic Values and Philosophy",
+        "content": "VERTEX Athletic stands for four core values: 1) Performance Without Compromise - every shoe is tested in real conditions by real athletes from Boston cobblestones to Iceland's volcanic trails. 2) Sustainability First - committed to net-zero emissions by 2030 with an Eco Line made from ocean plastics and recycled materials. 3) Community Over Competition - building a global community of outdoor enthusiasts through their app, events, and trail cleanup initiatives. 4) Innovation With Purpose - their Portland-based lab develops technology that solves real problems, including CloudCore cushioning and GripTech outsoles.",
+        "metadata": {
+            "category": "company_values",
+            "type": "philosophy",
+            "tags": ["values", "sustainability", "community", "innovation", "performance"]
+        }
+    },
+    {
+        "title": "VERTEX Athletic Technology and Products",
+        "content": "VERTEX Athletic has developed four key technologies: Storm Shield™ provides all-weather protection that breathes, CloudCore™ offers energy-return cushioning for all-day comfort, GripTech™ creates outsoles that stick to any surface, and EcoWeave™ is performance fabric made from ocean plastic. These technologies are integrated into their athletic footwear designed for outdoor athletes who transition between urban and natural environments.",
+        "metadata": {
+            "category": "products",
+            "type": "technology",
+            "tags": ["technology", "storm shield", "cloudcore", "griptech", "ecoweave", "footwear"]
+        }
+    },
+    {
+        "title": "VERTEX Athletic Company Statistics",
+        "content": "Key VERTEX Athletic statistics include: 500,000+ happy feet on trails worldwide, 2.5 million plastic bottles recycled into shoes, 47 pro athletes on Team VERTEX, 100% carbon neutral shipping since 2022, 15 countries with VERTEX retail presence, and over $1 million donated to trail conservation efforts. The company is a certified B Corporation and proud member of 1% for the Planet, with headquarters in Portland, OR running on 100% renewable energy.",
+        "metadata": {
+            "category": "company_stats",
+            "type": "metrics",
+            "tags": ["statistics", "impact", "sustainability", "global", "conservation"]
+        }
+    },
+    {
+        "title": "VERTEX Athletic Founders",
+        "content": "VERTEX Athletic was founded by three key individuals: Marcus Chen serves as CEO & Co-founder, bringing experience as a former Nike designer and accomplished ultrarunner with 15+ years in footwear innovation. Dr. Elena Rodriguez is Chief Sustainability Officer & Co-founder, an environmental scientist and mountaineer dedicated to protecting outdoor environments. James 'Trail' Thompson is Head of Product & Co-founder, a professional trail runner and gear expert who has tested equipment on all seven continents.",
+        "metadata": {
+            "category": "leadership",
+            "type": "founders",
+            "tags": ["founders", "leadership", "marcus chen", "elena rodriguez", "james thompson"]
+        }
+    },
+    {
+        "title": "VERTEX Athletic Community Engagement",
+        "content": "VERTEX Athletic emphasizes community engagement through multiple channels: they operate local run clubs accessible at vertex-athletic.com/community, organize volunteer trail maintenance days, offer a mobile app for tracking peaks and connecting with others, and provide newsletter subscriptions for exclusive stories and offers. Their community-focused approach reflects their 'Community Over Competition' value, fostering a global network of outdoor enthusiasts who support each other's journeys.",
+        "metadata": {
+            "category": "community",
+            "type": "engagement",
+            "tags": ["community", "run clubs", "volunteering", "app", "newsletter", "trails"]
+        }
+    },
+    {
+        "title": "VERTEX Athletic Contact and Brand Information",
+        "content": "VERTEX Athletic can be reached at hello@vertex-athletic.com for questions and inquiries. Their headquarters is located in Portland, Oregon and runs on 100% renewable energy. The company uses the hashtag #ReachYourPeak across their communications. As a certified B Corporation and member of 1% for the Planet, they demonstrate their commitment to social and environmental responsibility. Their tagline 'Reach Your Peak' represents their promise to help customers achieve their personal summits.",
+        "metadata": {
+            "category": "contact_info",
+            "type": "brand",
+            "tags": ["contact", "portland", "email", "hashtag", "b corp", "reach your peak"]
+        }
+    },
+    {
+        "title": "VERTEX Athletic Environmental Impact",
+        "content": "VERTEX Athletic demonstrates strong environmental commitment through several initiatives: they're working toward net-zero emissions by 2030, have achieved 100% carbon neutral shipping since 2022, recycle ocean plastics into their EcoWeave performance fabric, and have donated over $1 million to trail conservation efforts. Their Eco Line proves that high performance and environmental responsibility can coexist. As a member of 1% for the Planet, they donate 1% of revenue to environmental causes.",
+        "metadata": {
+            "category": "sustainability",
+            "type": "environmental",
+            "tags": ["environment", "net zero", "carbon neutral", "ocean plastic", "conservation", "eco line"]
+        }
+    }
+]

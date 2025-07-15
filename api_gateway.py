@@ -46,9 +46,154 @@ API_SECRET_KEY = os.getenv("API_SECRET_KEY", "your-secret-key-here")
 REDIS_URL = os.getenv("REDIS_URL")
 PORT = int(os.getenv("PORT", 8000))
 
+# Voice Agent Service
+import subprocess
+import signal
+import psutil
+from typing import Set
+
+class VoiceAgentService:
+    """Service to manage voice agent worker processes"""
+    
+    def __init__(self):
+        self.active_agents: Dict[str, Dict[str, Any]] = {}
+        self.agent_processes: Dict[str, subprocess.Popen] = {}
+        
+    async def start_agent_for_session(self, session_id: str, room_name: str) -> bool:
+        """Start a voice agent for a specific session/room"""
+        try:
+            if session_id in self.active_agents:
+                logger.info(f"Voice agent already running for session: {session_id}")
+                return True
+                
+            logger.info(f"🚀 Starting voice agent for session: {session_id}, room: {room_name}")
+            
+            # Set up environment for the agent process
+            agent_env = os.environ.copy()
+            agent_env.update({
+                "LIVEKIT_URL": LIVEKIT_URL,
+                "LIVEKIT_API_KEY": LIVEKIT_API_KEY,
+                "LIVEKIT_API_SECRET": LIVEKIT_API_SECRET,
+                "TARGET_ROOM": room_name,
+                "SESSION_ID": session_id
+            })
+            
+            # Command to run the voice agent (using knowledge base version)
+            agent_cmd = [
+                "python",
+                "/app/agent/main_with_kb.py",
+                "connect",
+                "--room", room_name,
+                "--url", LIVEKIT_URL,
+                "--api-key", LIVEKIT_API_KEY,
+                "--api-secret", LIVEKIT_API_SECRET
+            ]
+            
+            # Start the agent process
+            process = subprocess.Popen(
+                agent_cmd,
+                env=agent_env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                preexec_fn=os.setsid  # Create new process group
+            )
+            
+            # Store process and session info
+            self.agent_processes[session_id] = process
+            self.active_agents[session_id] = {
+                "room_name": room_name,
+                "process_id": process.pid,
+                "started_at": datetime.now(timezone.utc).isoformat(),
+                "status": "starting"
+            }
+            
+            logger.info(f"✅ Voice agent process started for session {session_id}, PID: {process.pid}")
+            
+            # Start monitoring task
+            asyncio.create_task(self._monitor_agent_process(session_id))
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to start voice agent for session {session_id}: {e}")
+            return False
+    
+    async def _monitor_agent_process(self, session_id: str):
+        """Monitor agent process and update status"""
+        try:
+            process = self.agent_processes.get(session_id)
+            if not process:
+                return
+                
+            # Wait a moment for process to initialize
+            await asyncio.sleep(2)
+            
+            # Check if process is still running
+            if process.poll() is None:
+                self.active_agents[session_id]["status"] = "connected"
+                logger.info(f"🎉 Voice agent connected successfully for session: {session_id}")
+            else:
+                # Process died, get error output
+                stdout, stderr = process.communicate()
+                logger.error(f"❌ Voice agent process died for session {session_id}")
+                logger.error(f"STDOUT: {stdout}")
+                logger.error(f"STDERR: {stderr}")
+                self.active_agents[session_id]["status"] = "failed"
+                
+        except Exception as e:
+            logger.error(f"Error monitoring agent process for session {session_id}: {e}")
+    
+    async def stop_agent_for_session(self, session_id: str) -> bool:
+        """Stop voice agent for a session"""
+        try:
+            if session_id not in self.active_agents:
+                logger.warning(f"No active agent found for session: {session_id}")
+                return False
+                
+            process = self.agent_processes.get(session_id)
+            if process:
+                logger.info(f"🛑 Stopping voice agent for session: {session_id}")
+                
+                # Try graceful shutdown first
+                try:
+                    os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    # Force kill if graceful shutdown fails
+                    os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+                    process.wait()
+                
+                # Clean up
+                del self.agent_processes[session_id]
+                
+            del self.active_agents[session_id]
+            logger.info(f"✅ Voice agent stopped for session: {session_id}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to stop voice agent for session {session_id}: {e}")
+            return False
+    
+    def get_agent_status(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """Get status of voice agent for a session"""
+        return self.active_agents.get(session_id)
+    
+    def list_active_agents(self) -> Dict[str, Dict[str, Any]]:
+        """List all active voice agents"""
+        return self.active_agents.copy()
+    
+    async def cleanup_all_agents(self):
+        """Clean up all active agents (called on shutdown)"""
+        logger.info("🧹 Cleaning up all voice agents...")
+        session_ids = list(self.active_agents.keys())
+        for session_id in session_ids:
+            await self.stop_agent_for_session(session_id)
+
 # Initialize components - will be set during startup
 kb = None
 session_manager = None
+voice_agent_service = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

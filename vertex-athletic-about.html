@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About VERTEX Athletic - Reach Your Peak</title>
+    <meta name="description" content="Founded by mountaineers and environmental scientists, VERTEX Athletic creates high-performance athletic footwear while respecting the environments we love to explore.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><path d="M0,300 C300,200 600,400 900,300 C1050,250 1150,350 1200,300 L1200,600 L0,600 Z" fill="%23667eea"/></svg>');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 100px 0;
+            margin-bottom: 0;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero .tagline {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .content {
+            background: white;
+            border-radius: 20px 20px 0 0;
+            margin-top: -50px;
+            position: relative;
+            z-index: 2;
+            padding: 60px 0;
+        }
+
+        .section {
+            margin-bottom: 60px;
+            padding: 0 40px;
+        }
+
+        .section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #2d3748;
+            text-align: center;
+            position: relative;
+        }
+
+        .section h2::after {
+            content: '';
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .section h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            line-height: 1.8;
+            color: #4a5568;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .value-card {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .value-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .value-card h4 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-top: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .tech-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .tech-item h4 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .founders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .founder-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .founder-card h4 {
+            font-size: 1.4rem;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .founder-title {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+            border-radius: 20px;
+            margin: 40px 20px;
+        }
+
+        .cta-section h2 {
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .cta-section h2::after {
+            background: white;
+        }
+
+        .cta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .cta-item {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .footer {
+            background: #2d3748;
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-section h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .footer-section p {
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        .hashtag {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero .tagline {
+                font-size: 1.2rem;
+            }
+            
+            .section {
+                padding: 0 20px;
+            }
+            
+            .section h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>VERTEX Athletic</h1>
+            <p class="tagline">Reach Your Peak</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="content">
+        <div class="container">
+            <!-- Our Story Section -->
+            <section class="section">
+                <h2>Our Story</h2>
+                <p>Founded in 2018 by a team of mountaineers, trail runners, and environmental scientists, VERTEX Athletic was born at 14,000 feet on a failed summit attempt of Mount Rainier. As our founders huddled in their tent during a whiteout, they realized their gear—while functional—wasn't truly designed for the modern outdoor athlete who moves seamlessly between city streets and mountain peaks.</p>
+                <p>That storm sparked an idea: create athletic footwear that performs at the highest level while respecting the environments we love to explore.</p>
+            </section>
+
+            <!-- Mission Section -->
+            <section class="section">
+                <h2>Our Mission</h2>
+                <p>"Reach Your Peak" isn't just our tagline—it's our promise. We believe everyone has their own summit to reach, whether it's a first 5K, an ultra-marathon, or simply staying active with their family. We're here to create the gear that gets you there.</p>
+            </section>
+
+            <!-- What We Stand For Section -->
+            <section class="section">
+                <h2>What We Stand For</h2>
+                <div class="values-grid">
+                    <div class="value-card">
+                        <h3>🏔️ Performance Without Compromise</h3>
+                        <p>Every VERTEX shoe is tested in real conditions by real athletes. From the cobblestones of Boston to the volcanic trails of Iceland, our gear is proven where it matters most.</p>
+                    </div>
+                    <div class="value-card">
+                        <h3>🌍 Sustainability First</h3>
+                        <p>We're committed to reaching net-zero emissions by 2030. Our Eco Line, made from ocean plastics and recycled materials, proves that high performance and environmental responsibility aren't mutually exclusive.</p>
+                    </div>
+                    <div class="value-card">
+                        <h3>🤝 Community Over Competition</h3>
+                        <p>We're building more than a brand—we're fostering a global community of outdoor enthusiasts who support each other's journeys. Through our app, events, and trail cleanup initiatives, we're stronger together.</p>
+                    </div>
+                    <div class="value-card">
+                        <h3>🔬 Innovation With Purpose</h3>
+                        <p>Our Portland-based lab doesn't innovate for innovation's sake. Every technology we develop—from our responsive CloudCore cushioning to our GripTech outsoles—solves real problems faced by real athletes.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- By The Numbers Section -->
+            <section class="section">
+                <h2>By The Numbers</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number">500,000+</span>
+                        <span class="stat-label">Happy feet on trails worldwide</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">2.5M</span>
+                        <span class="stat-label">Plastic bottles recycled into shoes</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">47</span>
+                        <span class="stat-label">Pro athletes on Team VERTEX</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">Carbon neutral shipping since 2022</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">15</span>
+                        <span class="stat-label">Countries with VERTEX retail presence</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">$1M+</span>
+                        <span class="stat-label">Donated to trail conservation efforts</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Technology Section -->
+            <section class="section">
+                <h2>Our Technology</h2>
+                <div class="tech-grid">
+                    <div class="tech-item">
+                        <h4>Storm Shield™</h4>
+                        <p>All-weather protection that breathes</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>CloudCore™</h4>
+                        <p>Energy-return cushioning for all-day comfort</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>GripTech™</h4>
+                        <p>Outsoles that stick to any surface</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>EcoWeave™</h4>
+                        <p>Performance fabric made from ocean plastic</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Founders Section -->
+            <section class="section">
+                <h2>Meet Our Founders</h2>
+                <div class="founders-grid">
+                    <div class="founder-card">
+                        <h4>Marcus Chen</h4>
+                        <p class="founder-title">CEO & Co-founder</p>
+                        <p>Former Nike designer and accomplished ultrarunner with 15+ years in footwear innovation.</p>
+                    </div>
+                    <div class="founder-card">
+                        <h4>Dr. Elena Rodriguez</h4>
+                        <p class="founder-title">Chief Sustainability Officer & Co-founder</p>
+                        <p>Environmental scientist and mountaineer dedicated to protecting the places we play.</p>
+                    </div>
+                    <div class="founder-card">
+                        <h4>James "Trail" Thompson</h4>
+                        <p class="founder-title">Head of Product & Co-founder</p>
+                        <p>Professional trail runner and gear junkie who's tested equipment on all seven continents.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Call to Action Section -->
+        <section class="cta-section">
+            <div class="container">
+                <h2>Join Our Journey</h2>
+                <p>Every purchase supports our mission to make the outdoors more accessible while protecting it for future generations. When you wear VERTEX, you're not just choosing performance—you're choosing purpose.</p>
+                
+                <h3 style="margin-top: 40px; margin-bottom: 20px;">Get Involved:</h3>
+                <div class="cta-grid">
+                    <div class="cta-item">
+                        <h4>🏃 Join a local run club</h4>
+                        <p>Find your pack at vertex-athletic.com/community</p>
+                    </div>
+                    <div class="cta-item">
+                        <h4>🌱 Volunteer</h4>
+                        <p>Sign up for trail maintenance days</p>
+                    </div>
+                    <div class="cta-item">
+                        <h4>📱 Download our app</h4>
+                        <p>Track your peaks and connect with others</p>
+                    </div>
+                    <div class="cta-item">
+                        <h4>📧 Stay updated</h4>
+                        <p>Subscribe to our newsletter for exclusive stories and offers</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <p>VERTEX Athletic is a certified B Corporation and proud member of 1% for the Planet.</p>
+                    <p>Our headquarters in Portland, OR runs on 100% renewable energy.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Questions? Reach out at hello@vertex-athletic.com</p>
+                    <p>Follow our journey on social media</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Impact</h4>
+                    <p>Supporting trail conservation</p>
+                    <p>Net-zero emissions by 2030</p>
+                    <p>Community over competition</p>
+                </div>
+            </div>
+            <div class="hashtag">#ReachYourPeak</div>
+        </div>
+    </footer>
+</body>
+</html>

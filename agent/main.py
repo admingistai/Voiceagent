@@ -4,19 +4,64 @@ import os
 import requests
 
 from livekit import rtc
-from livekit.agents import JobContext, WorkerOptions, cli, JobProcess
-from livekit.agents.llm import (
-    ChatContext,
-    ChatMessage,
-)
-from livekit.agents.pipeline import VoicePipelineAgent
+from livekit.agents import JobContext, WorkerOptions, cli, JobProcess, Agent, AgentSession, RoomInputOptions
 from livekit.agents.log import logger
 from livekit.plugins import deepgram, silero, cartesia, openai
+import time
+import asyncio
 from typing import List, Any
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+class Assistant(Agent):
+    def __init__(self) -> None:
+        super().__init__(instructions="You are a voice assistant created by LiveKit. Your interface with users will be voice. Pretend we're having a conversation, no special formatting or headings, just natural speech.")
+
+
+def create_deepgram_stt_with_retry(max_retries=3, base_delay=1.0):
+    """Create Deepgram STT instance with retry logic and error handling"""
+    
+    deepgram_key = os.getenv("DEEPGRAM_API_KEY")
+    if not deepgram_key:
+        logger.error("❌ DEEPGRAM_API_KEY not found in environment variables")
+        raise ValueError("DEEPGRAM_API_KEY is required")
+    
+    logger.info(f"🎤 Initializing Deepgram STT with API key: {deepgram_key[:10]}...")
+    
+    for attempt in range(max_retries):
+        try:
+            # Create Deepgram STT instance
+            stt = deepgram.STT(
+                model="nova-2",  # Use the latest model
+                language="en",
+                punctuate=True,
+                diarize=False,
+                smart_format=True,
+                interim_results=True,
+                utterance_end_ms=1000,
+                vad_events=True,
+            )
+            
+            logger.info("✅ Deepgram STT instance created successfully")
+            return stt
+            
+        except Exception as e:
+            logger.error(f"❌ Attempt {attempt + 1}/{max_retries} failed to create Deepgram STT: {e}")
+            
+            if attempt == max_retries - 1:
+                logger.error("❌ All attempts to create Deepgram STT failed")
+                raise Exception(f"Failed to initialize Deepgram STT after {max_retries} attempts: {e}")
+            
+            # Exponential backoff
+            delay = base_delay * (2 ** attempt)
+            logger.info(f"⏳ Retrying in {delay} seconds...")
+            time.sleep(delay)
+    
+    # This should never be reached, but just in case
+    raise Exception("Failed to create Deepgram STT instance")
 
 
 def prewarm(proc: JobProcess):
@@ -38,87 +83,36 @@ def prewarm(proc: JobProcess):
 
 
 async def entrypoint(ctx: JobContext):
-    initial_ctx = ChatContext(
-        messages=[
-            ChatMessage(
-                role="system",
-                content="You are a voice assistant created by LiveKit. Your interface with users will be voice. Pretend we're having a conversation, no special formatting or headings, just natural speech.",
-            )
-        ]
-    )
     cartesia_voices: List[dict[str, Any]] = ctx.proc.userdata["cartesia_voices"]
 
-    tts = cartesia.TTS(
-        model="sonic-2",
-    )
-    agent = VoicePipelineAgent(
-        vad=ctx.proc.userdata["vad"],
-        stt=deepgram.STT(),
+    # Create Deepgram STT with retry logic and error handling
+    try:
+        stt = create_deepgram_stt_with_retry()
+    except Exception as e:
+        logger.error(f"❌ Failed to initialize Deepgram STT: {e}")
+        logger.error("❌ Voice agent cannot continue without STT")
+        raise e
+    
+    # Create the agent session with all components
+    session = AgentSession(
+        stt=stt,
         llm=openai.LLM(model="gpt-4o-mini"),
-        tts=tts,
-        chat_ctx=initial_ctx,
+        tts=cartesia.TTS(model="sonic-2"),
+        vad=ctx.proc.userdata["vad"],
     )
 
-    is_user_speaking = False
-    is_agent_speaking = False
+    # Create the assistant agent
+    assistant = Assistant()
 
-    @ctx.room.on("participant_attributes_changed")
-    def on_participant_attributes_changed(
-        changed_attributes: dict[str, str], participant: rtc.Participant
-    ):
-        # check for attribute changes from the user itself
-        if participant.kind != rtc.ParticipantKind.PARTICIPANT_KIND_STANDARD:
-            return
-
-        if "voice" in changed_attributes:
-            voice_id = participant.attributes.get("voice")
-            logger.info(
-                f"participant {participant.identity} requested voice change: {voice_id}"
-            )
-            if not voice_id:
-                return
-
-            voice_data = next(
-                (voice for voice in cartesia_voices if voice["id"] == voice_id), None
-            )
-            if not voice_data:
-                logger.warning(f"Voice {voice_id} not found")
-                return
-            if "embedding" in voice_data:
-                language = "en"
-                if "language" in voice_data and voice_data["language"] != "en":
-                    language = voice_data["language"]
-                tts._opts.voice = voice_data["embedding"]
-                tts._opts.language = language
-                # allow user to confirm voice change as long as no one is speaking
-                if not (is_agent_speaking or is_user_speaking):
-                    asyncio.create_task(
-                        agent.say("How do I sound now?", allow_interruptions=True)
-                    )
+    # Start the session
+    await session.start(
+        room=ctx.room,
+        agent=assistant,
+    )
 
     await ctx.connect()
 
-    @agent.on("agent_started_speaking")
-    def agent_started_speaking():
-        nonlocal is_agent_speaking
-        is_agent_speaking = True
-
-    @agent.on("agent_stopped_speaking")
-    def agent_stopped_speaking():
-        nonlocal is_agent_speaking
-        is_agent_speaking = False
-
-    @agent.on("user_started_speaking")
-    def user_started_speaking():
-        nonlocal is_user_speaking
-        is_user_speaking = True
-
-    @agent.on("user_stopped_speaking")
-    def user_stopped_speaking():
-        nonlocal is_user_speaking
-        is_user_speaking = False
-
-    # set voice listing as attribute for UI
+    # Set voice listing as attribute for UI
     voices = []
     for voice in cartesia_voices:
         voices.append(
@@ -130,8 +124,10 @@ async def entrypoint(ctx: JobContext):
     voices.sort(key=lambda x: x["name"])
     await ctx.room.local_participant.set_attributes({"voices": json.dumps(voices)})
 
-    agent.start(ctx.room)
-    await agent.say("Hi there, how are you doing today?", allow_interruptions=True)
+    # Generate initial greeting
+    await session.generate_reply(
+        instructions="Greet the user and offer your assistance."
+    )
 
 
 if __name__ == "__main__":
